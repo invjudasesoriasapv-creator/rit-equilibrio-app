@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RIT Equilibrio — App Jurídica Laboral</title>
+  <meta name="description" content="Evalúa y elabora tu Reglamento Interno de Trabajo con IA. Derecho laboral colombiano."/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:#05080F;color:#E2E8F4;font-family:'Crimson Pro',Georgia,serif;min-height:100vh;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:#05080F;}::-webkit-scrollbar-thumb{background:#7A6130;border-radius:3px;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+    @keyframes scaleIn{from{transform:scale(0.95);opacity:0}to{transform:scale(1);opacity:1}}
+    @keyframes glow{0%,100%{box-shadow:0 0 24px rgba(200,169,81,0.15)}50%{box-shadow:0 0 48px rgba(200,169,81,0.45)}}
+    .fade-up{animation:fadeUp 0.5s ease forwards;}
+    .scale-in{animation:scaleIn 0.3s ease forwards;}
+    .spinner{width:40px;height:40px;border:3px solid #1A2540;border-top-color:#C8A951;border-radius:50%;animation:spin 0.85s linear infinite;margin:0 auto 20px;}
+    .btn-gold{background:linear-gradient(135deg,#C8A951,#E8C96A);color:#080600;font-family:'Cinzel',serif;font-weight:700;border:none;cursor:pointer;transition:all 0.2s;letter-spacing:0.05em;}
+    .btn-gold:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 28px rgba(200,169,81,0.5);}
+    .btn-gold:disabled{opacity:0.4;cursor:not-allowed;}
+    .btn-teal{background:linear-gradient(135deg,#0D9488,#14B8A6);color:#fff;font-family:'Cinzel',serif;font-weight:600;border:none;cursor:pointer;transition:all 0.2s;}
+    .btn-teal:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(13,148,136,0.4);}
+    .btn-ghost{background:transparent;border:1px solid #1E2A3A;color:#64748B;font-family:'Crimson Pro',serif;font-size:15px;cursor:pointer;transition:all 0.2s;}
+    .btn-ghost:hover{border-color:#C8A951;color:#C8A951;}
+    .card{background:#0C1220;border:1px solid #1A2540;border-radius:12px;}
+    textarea,input,select{background:#080D1A;border:1px solid #1A2540;color:#E2E8F4;font-family:'Crimson Pro',serif;font-size:15px;border-radius:8px;transition:border-color 0.2s;width:100%;}
+    textarea:focus,input:focus,select:focus{outline:none;border-color:#C8A951;}
+    select option{background:#0C1220;}
+    .badge{display:inline-flex;align-items:center;gap:4px;padding:3px 11px;border-radius:20px;font-size:11px;font-family:'Cinzel',serif;letter-spacing:0.05em;font-weight:600;}
+    .badge-gold{background:rgba(200,169,81,0.12);color:#C8A951;border:1px solid rgba(200,169,81,0.28);}
+    .badge-free{background:rgba(100,116,139,0.1);color:#64748B;border:1px solid rgba(100,116,139,0.25);}
+    .badge-ok{background:rgba(16,185,129,0.12);color:#10B981;}
+    .badge-warn{background:rgba(245,158,11,0.12);color:#F59E0B;}
+    .badge-err{background:rgba(239,68,68,0.12);color:#EF4444;}
+    .badge-master{background:linear-gradient(135deg,rgba(200,169,81,0.2),rgba(232,201,106,0.1));color:#E8C96A;border:1px solid rgba(200,169,81,0.4);}
+    .divider{height:1px;background:linear-gradient(90deg,transparent,#1A2540,transparent);margin:18px 0;}
+    .tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;color:#64748B;font-family:'Cinzel',serif;font-size:12px;letter-spacing:0.08em;padding:12px 18px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+    .tab-btn:hover{color:#C8A951;}
+    .tab-active{border-bottom-color:#C8A951!important;color:#C8A951!important;}
+    .falencia-item{border-left:3px solid #EF4444;padding:12px 16px;background:rgba(239,68,68,0.04);border-radius:0 8px 8px 0;margin-bottom:10px;}
+    .norma-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:8px;border:1px solid #1A2540;margin-bottom:8px;}
+    .toggle{width:40px;height:22px;border-radius:11px;position:relative;cursor:pointer;transition:background 0.2s;border:none;flex-shrink:0;}
+    .toggle-on{background:#C8A951;}.toggle-off{background:#1A2540;}
+    .toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;transition:left 0.2s;}
+    .toggle-on::after{left:21px;}.toggle-off::after{left:3px;}
+    .plan-card{background:#0C1220;border:1px solid #1A2540;border-radius:16px;padding:28px;transition:all 0.3s;}
+    .plan-premium{border-color:rgba(200,169,81,0.5);animation:glow 3s ease-in-out infinite;}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
+    .hidden{display:none!important;}
+    /* HERO LANDING */
+    .hero-landing{position:relative;overflow:hidden;padding:80px 24px 60px;text-align:center;background:linear-gradient(135deg,#05080F,#0C1220);}
+    .hero-landing::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% 0%,rgba(200,169,81,0.07) 0%,transparent 70%);pointer-events:none;}
+    .hero-glow{height:1px;background:linear-gradient(90deg,transparent,#C8A951,transparent);max-width:600px;margin:48px auto 0;}
+    .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin:32px 0;}
+    .feature-card{background:#0C1220;border:1px solid #1A2540;border-radius:10px;padding:20px;text-align:center;transition:all 0.2s;}
+    .feature-card:hover{border-color:#C8A951;transform:translateY(-2px);}
+    .plans-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;max-width:680px;margin:32px auto 0;}
+    /* NAV */
+    nav{background:rgba(5,8,15,0.96);border-bottom:1px solid #1A2540;padding:14px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px);}
+    .nav-brand{display:flex;align-items:center;gap:10px;cursor:pointer;}
+    .nav-tabs{display:flex;overflow-x:auto;border-bottom:1px solid #1A2540;padding:0 16px;}
+    /* SCORE RING */
+    .score-ring{display:inline-block;}
+    /* STAT */
+    .stat-card{background:#0C1220;border:1px solid #1A2540;border-radius:10px;padding:20px;text-align:center;}
+    @media(max-width:600px){.plans-grid{grid-template-columns:1fr;}.feature-grid{grid-template-columns:repeat(2,1fr);}}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="main-nav">
+  <div class="nav-brand" onclick="goLanding()">
+    <span style="font-size:22px">⚖️</span>
+    <span style="font-family:'Cinzel',serif;font-size:18px;font-weight:700;background:linear-gradient(135deg,#C8A951,#E8C96A);-webkit-background-clip:text;-webkit-text-fill-color:transparent">RIT Equilibrio</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap" id="nav-right">
+    <span class="badge badge-free" id="badge-plan">🎁 1ª Eval. Gratis</span>
+    <button class="btn-teal" onclick="showPayU()" id="btn-premium-nav" style="padding:7px 16px;border-radius:7px;font-size:13px">⭐ Premium</button>
+    <button class="btn-ghost" onclick="showPinModal()" style="padding:7px 14px;border-radius:7px;font-size:12px">👑</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════
+     PANTALLA: LANDING
+════════════════════════════════════════════════ -->
+<div id="screen-landing">
+  <div class="hero-landing">
+    <div style="position:relative;z-index:1;max-width:900px;margin:0 auto;">
+      <div class="fade-up">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(200,169,81,0.12);border:1px solid rgba(200,169,81,0.3);color:#C8A951;font-family:'Cinzel',serif;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:28px">⚖️ Plataforma Jurídica Laboral Colombiana</div>
+        <h1 style="font-family:'Cinzel',serif;font-size:clamp(26px,5vw,48px);font-weight:900;line-height:1.15;margin-bottom:18px;color:#E2E8F4">Evalúa y Elabora tu<br><span style="background:linear-gradient(135deg,#C8A951,#E8C96A);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Reglamento Interno de Trabajo</span></h1>
+        <p style="color:#94A3B8;font-size:17px;max-width:520px;margin:0 auto 36px;line-height:1.65">Análisis jurídico con IA basado en CST, Decreto 1072/2015, jurisprudencia de la Corte Suprema de Justicia y la Corte Constitucional de Colombia.</p>
+        <button class="btn-gold" onclick="goApp()" style="padding:15px 48px;font-size:16px;border-radius:8px">🎁 Primera Evaluación Gratis</button>
+      </div>
+      <div class="feature-grid" style="margin-top:48px">
+        <div class="feature-card"><div style="font-size:26px;margin-bottom:8px">🔍</div><div style="font-family:'Cinzel',serif;font-size:12px;color:#C8A951;margin-bottom:6px">Detección de Falencias</div><div style="color:#64748B;font-size:13px">Incumplimientos + nivel de riesgo</div></div>
+        <div class="feature-card"><div style="font-size:26px;margin-bottom:8px">📊</div><div style="font-family:'Cinzel',serif;font-size:12px;color:#C8A951;margin-bottom:6px">Dictamen Completo</div><div style="color:#64748B;font-size:13px">Puntaje, alertas y recomendaciones</div></div>
+        <div class="feature-card"><div style="font-size:26px;margin-bottom:8px">⚖️</div><div style="font-family:'Cinzel',serif;font-size:12px;color:#C8A951;margin-bottom:6px">Proceso Disciplinario</div><div style="color:#64748B;font-size:13px">Tipificación, plazos y defensa</div></div>
+        <div class="feature-card"><div style="font-size:26px;margin-bottom:8px">🏛️</div><div style="font-family:'Cinzel',serif;font-size:12px;color:#C8A951;margin-bottom:6px">Jurisprudencia</div><div style="color:#64748B;font-size:13px">CSJ Sala Laboral + Corte Const.</div></div>
+        <div class="feature-card"><div style="font-size:26px;margin-bottom:8px">✍️</div><div style="font-family:'Cinzel',serif;font-size:12px;color:#C8A951;margin-bottom:6px">Elaboración RIT</div><div style="color:#64748B;font-size:13px">Genera tu reglamento desde cero</div></div>
+        <div class="feature-card"><div style="font-size:26px;margin-bottom:8px">📄</div><div style="font-family:'Cinzel',serif;font-size:12px;color:#C8A951;margin-bottom:6px">Informe PDF</div><div style="color:#64748B;font-size:13px">Dictamen descargable profesional</div></div>
+      </div>
+      <div class="hero-glow"></div>
+    </div>
+  </div>
+
+  <!-- PLANES LANDING -->
+  <div style="max-width:960px;margin:0 auto;padding:48px 20px">
+    <h2 style="font-family:'Cinzel',serif;text-align:center;font-size:22px;margin-bottom:6px;color:#E2E8F4">Planes y Precios</h2>
+    <p style="text-align:center;color:#64748B;margin-bottom:0;font-size:15px">Primera evaluación gratuita — sin tarjeta requerida</p>
+    <div class="plans-grid">
+      <div class="plan-card">
+        <span class="badge badge-free" style="margin-bottom:16px">PRIMERA VEZ GRATIS</span>
+        <div style="font-family:'Cinzel',serif;font-size:30px;font-weight:900;color:#E2E8F4;margin-bottom:3px">$0</div>
+        <div style="color:#64748B;font-size:13px;margin-bottom:18px">Una sola evaluación</div>
+        <div class="divider"></div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Falencias detectadas</div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Nivel de riesgo legal</div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Norma que incumple</div>
+        <div style="font-size:14px;color:#2D3748;margin-bottom:7px">✗ Sin puntaje ni calificación</div>
+        <div style="font-size:14px;color:#2D3748;margin-bottom:7px">✗ Sin recomendaciones</div>
+        <div style="font-size:14px;color:#2D3748;margin-bottom:7px">✗ Sin elaboración de RIT</div>
+        <button class="btn-ghost" onclick="goApp()" style="width:100%;padding:12px;border-radius:8px;margin-top:18px">Comenzar Gratis</button>
+      </div>
+      <div class="plan-card plan-premium" style="position:relative">
+        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#C8A951,#E8C96A);color:#080600;font-family:'Cinzel',serif;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap">⭐ RECOMENDADO</div>
+        <span class="badge badge-gold" style="margin-bottom:16px">PREMIUM</span>
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:3px">
+          <div><div style="font-family:'Cinzel',serif;font-size:22px;font-weight:900;color:#C8A951">$9.99 USD</div><div style="color:#64748B;font-size:11px">por evaluación</div></div>
+          <div style="color:#64748B;font-size:13px;padding-bottom:2px">ó</div>
+          <div><div style="font-family:'Cinzel',serif;font-size:22px;font-weight:900;color:#C8A951">$19.99 USD</div><div style="color:#64748B;font-size:11px">/mes ilimitado</div></div>
+        </div>
+        <div class="divider"></div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Todo lo del plan gratuito</div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Dictamen completo con puntaje</div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ CST + Decreto 1072/2015</div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Jurisprudencia CSJ + C.Const.</div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Proceso disciplinario completo</div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Alertas de riesgo crítico</div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Elaboración RIT desde cero</div>
+        <div style="font-size:14px;color:#94A3B8;margin-bottom:7px">✓ Informe PDF descargable</div>
+        <button class="btn-gold" onclick="showPayU()" style="width:100%;padding:13px;border-radius:8px;margin-top:18px;font-size:15px">Obtener Premium</button>
+        <p style="text-align:center;color:#64748B;font-size:11px;margin-top:10px">🔒 Pago seguro con PayU Colombia</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="border-top:1px solid #1A2540;padding:24px;text-align:center">
+    <div style="display:inline-flex;align-items:center;gap:8px;margin-bottom:6px"><span>⚖️</span><span style="font-family:'Cinzel',serif;font-size:15px;color:#C8A951">RIT Equilibrio</span></div>
+    <p style="color:#2D3748;font-size:13px">© 2025 RIT Equilibrio · Abogado Alexander Páez Vergara · T.P. 377364 C.S.J. · Montería, Córdoba</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PANTALLA: APP PRINCIPAL
+════════════════════════════════════════════════ -->
+<div id="screen-app" class="hidden">
+  <div class="nav-tabs" id="app-tabs">
+    <button class="tab-btn tab-active" onclick="switchTab('evaluar')">⚖️ Evaluar RIT</button>
+    <button class="tab-btn" onclick="switchTab('elaborar')" id="tab-elaborar">✍️ Elaborar RIT</button>
+  </div>
+  <div style="max-width:800px;margin:0 auto;padding:24px 16px">
+    <!-- TAB EVALUAR -->
+    <div id="tab-content-evaluar">
+      <div id="eval-input-area"></div>
+      <div id="eval-loading" class="hidden" style="text-align:center;padding:60px 20px">
+        <div class="spinner"></div>
+        <p id="eval-loading-msg" style="color:#C8A951;font-family:'Cinzel',serif;font-size:13px;letter-spacing:0.12em;animation:pulse 1.5s ease infinite">Analizando...</p>
+      </div>
+      <div id="eval-resultado" class="hidden"></div>
+    </div>
+    <!-- TAB ELABORAR -->
+    <div id="tab-content-elaborar" class="hidden">
+      <div id="elab-input-area"></div>
+      <div id="elab-loading" class="hidden" style="text-align:center;padding:60px 20px">
+        <div class="spinner"></div>
+        <p style="color:#C8A951;font-family:'Cinzel',serif;font-size:13px;letter-spacing:0.12em;animation:pulse 1.5s ease infinite">Elaborando Reglamento Interno de Trabajo completo...</p>
+      </div>
+      <div id="elab-resultado" class="hidden"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PANTALLA: PANEL MAESTRO
+════════════════════════════════════════════════ -->
+<div id="screen-master" class="hidden">
+  <div style="background:linear-gradient(135deg,rgba(200,169,81,0.1),rgba(232,201,106,0.04));border-bottom:1px solid rgba(200,169,81,0.25);padding:14px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:24px">⚖️</span>
+      <div><div style="font-family:'Cinzel',serif;font-size:16px;color:#C8A951;font-weight:700">RIT Equilibrio</div><div style="color:#64748B;font-size:11px;font-family:'Cinzel',serif;letter-spacing:0.1em">PANEL MAESTRO</div></div>
+      <span class="badge badge-master">👑 Acceso Ilimitado</span>
+    </div>
+    <button class="btn-ghost" onclick="exitMaster()" style="padding:8px 18px;border-radius:7px">← Salir del Panel</button>
+  </div>
+  <div style="max-width:960px;margin:0 auto;padding:24px 16px">
+    <div style="display:flex;overflow-x:auto;border-bottom:1px solid #1A2540;margin-bottom:24px">
+      <button class="tab-btn tab-active" onclick="masterTab('stats')" id="mtab-stats">📊 Estadísticas</button>
+      <button class="tab-btn" onclick="masterTab('normas')" id="mtab-normas">📋 Normativa</button>
+      <button class="tab-btn" onclick="masterTab('usuarios')" id="mtab-usuarios">👥 Usuarios</button>
+    </div>
+    <div id="master-content"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MODALES
+════════════════════════════════════════════════ -->
+<!-- Modal PIN -->
+<div id="modal-pin" class="modal-overlay hidden">
+  <div class="card scale-in" style="max-width:340px;width:100%;padding:32px;text-align:center;position:relative">
+    <button class="btn-ghost" onclick="closePinModal()" style="position:absolute;top:14px;right:14px;padding:3px 10px;border-radius:6px">✕</button>
+    <div style="font-size:36px;margin-bottom:12px">👑</div>
+    <div style="font-family:'Cinzel',serif;font-size:18px;color:#C8A951;margin-bottom:4px">Acceso Maestro</div>
+    <div style="color:#64748B;font-size:13px;margin-bottom:24px">Ingresa el PIN para acceder al panel de administración</div>
+    <input type="password" id="pin-input" maxlength="6" placeholder="● ● ● ●" onkeydown="if(event.key==='Enter')checkPin()" style="padding:14px;font-size:24px;text-align:center;letter-spacing:0.3em;margin-bottom:12px"/>
+    <div id="pin-error" style="color:#EF4444;font-size:13px;margin-bottom:12px;display:none">PIN incorrecto. Intenta de nuevo.</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-gold" onclick="checkPin()" style="flex:1;padding:12px;border-radius:8px;font-size:15px">Entrar</button>
+      <button class="btn-ghost" onclick="closePinModal()" style="padding:12px 18px;border-radius:8px">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal PayU -->
+<div id="modal-payu" class="modal-overlay hidden">
+  <div class="card scale-in" style="max-width:420px;width:100%;padding:32px;position:relative">
+    <button class="btn-ghost" onclick="closePayU()" style="position:absolute;top:14px;right:14px;padding:3px 10px;border-radius:6px">✕</button>
+    <div style="text-align:center;margin-bottom:24px">
+      <div style="font-size:32px;margin-bottom:8px">💳</div>
+      <div style="font-family:'Cinzel',serif;font-size:18px;color:#C8A951;margin-bottom:4px">Activar Plan Premium</div>
+      <div style="color:#64748B;font-size:13px">Pago seguro procesado por PayU Colombia</div>
+    </div>
+    <div id="payu-content"></div>
+  </div>
+</div>
+
+<!-- WhatsApp flotante -->
+<a href="https://wa.me/573043372763?text=Hola,%20estoy%20interesado%20en%20RIT%20Equilibrio" target="_blank" style="position:fixed;bottom:24px;right:24px;z-index:999;width:54px;height:54px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 20px rgba(37,211,102,0.5);text-decoration:none;transition:all 0.2s" title="WhatsApp">💬</a>
+
+<script>
+// ─── ESTADO ───────────────────────────────────────────────────────────────────
+const STATE = {
+  plan: sessionStorage.getItem('rit_plan') || 'none', // none | free_used | premium
+  payuTipo: 'mensual',
+  masterTab: 'stats',
+  appTab: 'evaluar',
+  elab_open: -1,
+  normas: JSON.parse(localStorage.getItem('rit_normas') || 'null') || getDefaultNormas()
+};
+
+function getDefaultNormas() {
+  return [
+    {id:'cst_104',codigo:'Arts. 104-107 CST',desc:'Obligatoriedad y contenido mínimo del RIT',cat:'CST',on:true},
+    {id:'cst_108',codigo:'Art. 108 CST',desc:'Cláusulas obligatorias del reglamento',cat:'CST',on:true},
+    {id:'cst_112',codigo:'Arts. 112-114 CST',desc:'Sanciones disciplinarias — tipos y límites',cat:'CST',on:true},
+    {id:'cst_115',codigo:'Art. 115 CST',desc:'Procedimiento para imposición de sanciones',cat:'CST',on:true},
+    {id:'cst_62',codigo:'Art. 62 CST',desc:'Causales de terminación justa del contrato',cat:'CST',on:true},
+    {id:'dec1072_reg',codigo:'Dec. 1072/2015 §2.2.2.4',desc:'Registro del reglamento ante MinTrabajo',cat:'Decreto',on:true},
+    {id:'dec1072_sst',codigo:'Dec. 1072/2015 §2.2.4',desc:'Sistema de Gestión de SST (SG-SST)',cat:'Decreto',on:true},
+    {id:'ley1010',codigo:'Ley 1010/2006',desc:'Prevención y sanción del acoso laboral',cat:'Ley',on:true},
+    {id:'ley1257',codigo:'Ley 1257/2008',desc:'No violencia y perspectiva de género laboral',cat:'Ley',on:true},
+    {id:'ley1581',codigo:'Ley 1581/2012',desc:'Protección de datos personales del trabajador',cat:'Ley',on:true},
+    {id:'cconst_c593',codigo:'C-593/14 C.Const.',desc:'Constitucionalidad del proc. disciplinario laboral',cat:'Jurisprudencia',on:true},
+    {id:'cconst_su998',codigo:'SU-998/00 C.Const.',desc:'Derecho de defensa y contradicción del trabajador',cat:'Jurisprudencia',on:true},
+    {id:'csj_sl2771',codigo:'SL2771-2018 CSJ',desc:'Proporcionalidad falta-sanción — Sala Laboral',cat:'Jurisprudencia',on:true},
+    {id:'csj_sl1360',codigo:'SL1360-2019 CSJ',desc:'Tipificación de faltas gravísimas y despido',cat:'Jurisprudencia',on:true},
+  ];
+}
+
+const MASTER_PIN = '2580';
+const USERS = [
+  {nombre:'María López',email:'maria@empresa.com',plan:'premium',tipo:'mensual',fecha:'2025-04-01',evals:12,ingresos:39.98},
+  {nombre:'Carlos Ruiz',email:'carlos@hr.co',plan:'premium',tipo:'por_uso',fecha:'2025-04-15',evals:3,ingresos:29.97},
+  {nombre:'Ana Bermúdez',email:'ana@legal.co',plan:'free',tipo:'—',fecha:'2025-05-01',evals:1,ingresos:0},
+  {nombre:'Jorge Martínez',email:'jorge@corp.com',plan:'premium',tipo:'mensual',fecha:'2025-03-10',evals:28,ingresos:59.97},
+];
+
+// ─── NAVEGACIÓN ───────────────────────────────────────────────────────────────
+function show(id){document.querySelectorAll('[id^="screen-"]').forEach(s=>s.classList.add('hidden'));document.getElementById(id).classList.remove('hidden');}
+function goLanding(){show('screen-landing');updateNav();}
+function goApp(){show('screen-app');renderEvalInput();updateNav();}
+function exitMaster(){goApp();}
+function updateNav(){
+  const isFree=STATE.plan==='none';
+  const isUsed=STATE.plan==='free_used';
+  const isPrem=STATE.plan==='premium';
+  const badge=document.getElementById('badge-plan');
+  const btnPrem=document.getElementById('btn-premium-nav');
+  if(isPrem){badge.textContent='⭐ Premium';badge.className='badge badge-gold';btnPrem.classList.add('hidden');}
+  else if(isUsed){badge.textContent='Free usado';badge.className='badge badge-free';btnPrem.classList.remove('hidden');}
+  else{badge.textContent='🎁 1ª Eval. Gratis';badge.className='badge badge-free';btnPrem.classList.remove('hidden');}
+}
+
+// ─── TABS APP ─────────────────────────────────────────────────────────────────
+function switchTab(t){
+  if(t==='elaborar'&&STATE.plan!=='premium'){showPayU();return;}
+  STATE.appTab=t;
+  document.getElementById('tab-content-evaluar').classList.toggle('hidden',t!=='evaluar');
+  document.getElementById('tab-content-elaborar').classList.toggle('hidden',t!=='elaborar');
+  document.querySelectorAll('.nav-tabs .tab-btn').forEach((b,i)=>b.classList.toggle('tab-active',i===(t==='evaluar'?0:1)));
+  if(t==='elaborar')renderElabInput();
+}
+
+// ─── PROMPTS ──────────────────────────────────────────────────────────────────
+const PROMPT_FREE=`Eres experto jurídico laboral colombiano. Analiza este Reglamento Interno de Trabajo e identifica ÚNICAMENTE sus falencias y el nivel de riesgo legal global.
+Responde SOLO en JSON válido sin markdown:
+{"riesgo_global":"ALTO","resumen_riesgo":"Una oración sobre el riesgo general","falencias":[{"norma":"Art. 115 CST","falencia":"Descripción clara de la falencia","riesgo":"ALTO"}],"total_falencias":5,"advertencia":"Mensaje persuasivo sobre el análisis premium"}`;
+
+function buildPromptPremium(){
+  const lista=STATE.normas.filter(n=>n.on).map(n=>`- ${n.codigo}: ${n.desc}`).join('\n');
+  return `Eres experto jurídico laboral colombiano. Emite un DICTAMEN TÉCNICO-JURÍDICO COMPLETO del RIT con base en:\n${lista}\nEvalúa: tipificación faltas (leves/graves/gravísimas), debido proceso art.115 CST, proporcionalidad sanciones, plazos, derecho defensa.\nResponde SOLO en JSON válido sin markdown:
+{"resumen":"Diagnóstico ejecutivo 3-4 oraciones","puntuacion_global":7.8,"riesgo_global":"MEDIO","criterios":[{"label":"Arts. 104-107 CST — Contenido mínimo","norma":"Arts. 104-107 CST","puntaje":8,"estado":"cumple","comentario":"análisis","alerta":null}],"proceso_disciplinario":{"tipificacion":{"puntaje":7,"analisis":"análisis","alerta":null},"debido_proceso":{"puntaje":6,"analisis":"análisis","alerta":null},"proporcionalidad":{"puntaje":8,"analisis":"análisis","alerta":null},"plazos":{"puntaje":7,"analisis":"análisis","alerta":null},"derecho_defensa":{"puntaje":9,"analisis":"análisis","alerta":null}},"fortalezas":["f1","f2","f3"],"debilidades":["d1","d2","d3"],"alertas_criticas":[],"recomendaciones":["r1","r2","r3"]}`;
+}
+
+const PROMPT_ELABORAR=`Eres experto jurídico laboral colombiano. Elabora un RIT completo y técnico ajustado al CST colombiano vigente. Incluye: objeto, admisión, periodo prueba, jornada, descansos, salario, obligaciones/prohibiciones, tipificación faltas (leves/graves/gravísimas), procedimiento disciplinario art.115 CST, sanciones proporcionales, causales terminación art.62 CST, acoso laboral Ley 1010/2006, género Ley 1257/2008, datos personales Ley 1581/2012, SST Dec.1072/2015, vigencia y registro MinTrabajo.
+Responde SOLO en JSON válido sin markdown:
+{"titulo":"Reglamento Interno de Trabajo — [Empresa]","capitulos":[{"numero":1,"titulo":"Título capítulo","articulos":[{"numero":1,"titulo":"Nombre artículo","contenido":"Texto legal completo del artículo."}]}]}`;
+
+// ─── LLAMADA IA ───────────────────────────────────────────────────────────────
+async function callAI(system, user){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:4000,system,messages:[{role:'user',content:user}]})});
+  const d=await r.json();
+  const raw=d.content?.map(b=>b.text||'').join('')||'';
+  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+}
+
+// ─── EVALUADOR INPUT ─────────────────────────────────────────────────────────
+function renderEvalInput(){
+  const isPrem=STATE.plan==='premium';
+  const isFree=STATE.plan==='none';
+  const isUsed=STATE.plan==='free_used';
+  document.getElementById('eval-resultado').classList.add('hidden');
+  document.getElementById('eval-loading').classList.add('hidden');
+
+  if(isUsed){
+    document.getElementById('eval-input-area').innerHTML=`
+      <div class="fade-up" style="text-align:center;padding:48px 24px">
+        <div style="font-size:48px;margin-bottom:16px">⚖️</div>
+        <div style="font-family:'Cinzel',serif;font-size:18px;color:#C8A951;margin-bottom:8px">Ya usaste tu evaluación gratuita</div>
+        <p style="color:#64748B;max-width:400px;margin:0 auto 28px;line-height:1.6">Activa Premium para evaluaciones ilimitadas con dictamen completo, jurisprudencia y elaboración de RIT.</p>
+        <button class="btn-gold" onclick="showPayU()" style="padding:13px 40px;border-radius:8px;font-size:15px">⭐ Activar Premium — Desde $9.99 USD</button>
+      </div>`;
+    return;
+  }
+
+  const infoBox = isFree
+    ? `<div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;gap:10px">
+        <span style="font-size:18px">🎁</span>
+        <div><div style="color:#10B981;font-family:'Cinzel',serif;font-size:13px;margin-bottom:3px">Primera evaluación gratuita</div>
+        <div style="color:#64748B;font-size:13px;line-height:1.5">Detectaremos las falencias y el nivel de riesgo. Sin puntaje ni recomendaciones — eso es Premium.</div></div></div>`
+    : `<div style="background:rgba(200,169,81,0.06);border:1px solid rgba(200,169,81,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;gap:10px">
+        <span style="font-size:18px">⭐</span>
+        <div><div style="color:#C8A951;font-family:'Cinzel',serif;font-size:13px;margin-bottom:3px">Plan Premium Activo</div>
+        <div style="color:#64748B;font-size:13px;line-height:1.5">Dictamen completo con puntajes, jurisprudencia, proceso disciplinario y recomendaciones.</div></div></div>`;
+
+  document.getElementById('eval-input-area').innerHTML=`
+    <div class="fade-up">
+      ${infoBox}
+      <div class="card" style="padding:22px">
+        <div style="font-family:'Cinzel',serif;font-size:13px;color:#C8A951;margin-bottom:10px;letter-spacing:0.08em">TEXTO DEL REGLAMENTO</div>
+        <textarea id="eval-texto" rows="12" style="padding:13px;resize:vertical;line-height:1.65" placeholder="Pega aquí el texto completo del Reglamento Interno de Trabajo a evaluar..."></textarea>
+        <div id="eval-error" style="color:#EF4444;font-size:13px;margin-top:8px;display:none"></div>
+        <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <button class="btn-gold" onclick="evaluar()" style="padding:12px 32px;border-radius:8px;font-size:15px">${isFree?'🔍 Detectar Falencias — Gratis':'⚖️ Generar Dictamen Completo'}</button>
+          ${!isPrem?`<button class="btn-teal" onclick="showPayU()" style="padding:12px 24px;border-radius:8px;font-size:14px">⭐ Premium</button>`:''}
+        </div>
+      </div>
+    </div>`;
+}
+
+async function evaluar(){
+  const texto=document.getElementById('eval-texto').value.trim();
+  if(texto.length<80){document.getElementById('eval-error').textContent='Ingresa el texto del reglamento (mínimo 80 caracteres).';document.getElementById('eval-error').style.display='block';return;}
+  document.getElementById('eval-error').style.display='none';
+  document.getElementById('eval-input-area').classList.add('hidden');
+  document.getElementById('eval-loading').classList.remove('hidden');
+  const isPrem=STATE.plan==='premium';
+  document.getElementById('eval-loading-msg').textContent=isPrem?'Elaborando dictamen técnico-jurídico completo...':'Detectando falencias con IA jurídica...';
+  try{
+    let data;
+    if(isPrem){data=await callAI(buildPromptPremium(),`REGLAMENTO:\n\n${texto}`);renderResultadoPremium(data);}
+    else{data=await callAI(PROMPT_FREE,`REGLAMENTO:\n\n${texto}`);renderResultadoFree(data);STATE.plan='free_used';sessionStorage.setItem('rit_plan','free_used');updateNav();}
+  }catch(e){
+    document.getElementById('eval-loading').classList.add('hidden');
+    document.getElementById('eval-input-area').classList.remove('hidden');
+    document.getElementById('eval-error').textContent='Error al analizar. Verifica el texto e intenta de nuevo.';
+    document.getElementById('eval-error').style.display='block';
+  }
+  document.getElementById('eval-loading').classList.add('hidden');
+  document.getElementById('eval-resultado').classList.remove('hidden');
+}
+
+function riskClass(r){return{ALTO:'badge-err',MEDIO:'badge-warn',BAJO:'badge-ok'}[r]||'badge-ok';}
+function riskIcon(r){return{ALTO:'🔴',MEDIO:'🟡',BAJO:'🟢'}[r]||'🟢';}
+
+function renderResultadoFree(d){
+  const el=document.getElementById('eval-resultado');
+  el.innerHTML=`
+    <div class="fade-up">
+      <div class="card" style="padding:24px;margin-bottom:16px;border-color:${d.riesgo_global==='ALTO'?'rgba(239,68,68,0.4)':d.riesgo_global==='MEDIO'?'rgba(245,158,11,0.4)':'rgba(16,185,129,0.3)'}">
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="font-size:40px">${riskIcon(d.riesgo_global)}</div>
+          <div style="flex:1">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap">
+              <span style="font-family:'Cinzel',serif;font-size:14px;color:#E2E8F4">Nivel de Riesgo Legal</span>
+              <span class="badge ${riskClass(d.riesgo_global)}">${d.riesgo_global}</span>
+              <span class="badge badge-free">Evaluación Gratuita</span>
+            </div>
+            <p style="color:#94A3B8;font-size:15px;line-height:1.5">${d.resumen_riesgo}</p>
+          </div>
+        </div>
+      </div>
+      <div class="card" style="padding:24px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+          <div style="font-family:'Cinzel',serif;font-size:14px;color:#C8A951;letter-spacing:0.08em">FALENCIAS DETECTADAS</div>
+          <span class="badge badge-err">${d.total_falencias} falencias</span>
+        </div>
+        ${(d.falencias||[]).map(f=>`
+          <div class="falencia-item">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+              <div style="flex:1">
+                <div style="color:#E2E8F4;font-size:15px;margin-bottom:4px;line-height:1.4">${f.falencia}</div>
+                <div style="color:#64748B;font-size:12px;font-family:'Cinzel',serif">${f.norma}</div>
+              </div>
+              <span class="badge ${riskClass(f.riesgo)}" style="flex-shrink:0">${f.riesgo}</span>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div style="background:linear-gradient(135deg,rgba(200,169,81,0.08),rgba(13,148,136,0.05));border:1px solid rgba(200,169,81,0.25);border-radius:12px;padding:24px;text-align:center">
+        <div style="font-size:28px;margin-bottom:10px">⭐</div>
+        <div style="font-family:'Cinzel',serif;font-size:16px;color:#C8A951;margin-bottom:8px">Obtén el Dictamen Completo</div>
+        <p style="color:#94A3B8;font-size:14px;margin-bottom:20px;line-height:1.6;max-width:440px;margin-left:auto;margin-right:auto">${d.advertencia}</p>
+        <button class="btn-gold" onclick="showPayU()" style="padding:13px 40px;border-radius:8px;font-size:15px">Activar Premium — Desde $9.99 USD</button>
+        <p style="color:#64748B;font-size:12px;margin-top:10px">🔒 Pago seguro con PayU Colombia</p>
+      </div>
+      <button class="btn-ghost" onclick="resetEval()" style="padding:10px 24px;border-radius:8px;margin-top:16px">← Nueva Evaluación</button>
+    </div>`;
+}
+
+function renderResultadoPremium(d){
+  const el=document.getElementById('eval-resultado');
+  const scoreColor=v=>v>=7?'#10B981':v>=5?'#F59E0B':'#EF4444';
+  el.innerHTML=`
+    <div class="fade-up">
+      <div class="card" style="padding:24px;margin-bottom:16px;border-color:rgba(200,169,81,0.3)">
+        <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+          <div style="text-align:center;flex-shrink:0">
+            <div style="font-family:'Cinzel',serif;font-size:36px;font-weight:900;color:${scoreColor(d.puntuacion_global)}">${d.puntuacion_global?.toFixed(1)}</div>
+            <div style="color:#64748B;font-size:11px;font-family:'Cinzel',serif">/10</div>
+          </div>
+          <div style="flex:1">
+            <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+              <span class="badge badge-gold">⭐ Dictamen Premium</span>
+              <span class="badge ${riskClass(d.riesgo_global)}">${riskIcon(d.riesgo_global)} Riesgo ${d.riesgo_global}</span>
+            </div>
+            <p style="color:#94A3B8;font-size:15px;line-height:1.55">${d.resumen}</p>
+          </div>
+        </div>
+        ${(d.alertas_criticas||[]).length>0?`<div style="margin-top:16px;padding:12px 16px;background:rgba(239,68,68,0.07);border:1px solid rgba(239,68,68,0.25);border-radius:8px"><div style="color:#EF4444;font-family:'Cinzel',serif;font-size:12px;margin-bottom:8px">⚠ ALERTAS CRÍTICAS</div>${d.alertas_criticas.map(a=>`<div style="color:#FCA5A5;font-size:14px;margin-bottom:4px">• ${a}</div>`).join('')}</div>`:''}
+      </div>
+
+      <div style="display:flex;overflow-x:auto;border-bottom:1px solid #1A2540;margin-bottom:16px">
+        <button class="tab-btn tab-active" id="rtab-criterios" onclick="rTab('criterios')">Criterios</button>
+        <button class="tab-btn" id="rtab-disciplinario" onclick="rTab('disciplinario')">Proceso Disciplinario</button>
+        <button class="tab-btn" id="rtab-conclusiones" onclick="rTab('conclusiones')">Conclusiones</button>
+      </div>
+
+      <div id="rtab-content-criterios">
+        ${(d.criterios||[]).map(c=>`
+          <div class="card" style="padding:18px 20px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+              <div style="flex:1"><div style="color:#E2E8F4;font-size:15px;margin-bottom:3px">${c.label}</div><div style="color:#64748B;font-size:12px;font-family:'Cinzel',serif">${c.norma}</div></div>
+              <div style="display:flex;gap:8px;align-items:center;flex-shrink:0">
+                <span style="font-family:'Cinzel',serif;font-size:18px;color:${scoreColor(c.puntaje)};font-weight:700">${c.puntaje}/10</span>
+                <span class="badge ${c.estado==='cumple'?'badge-ok':c.estado==='cumple_parcial'?'badge-warn':'badge-err'}">${c.estado==='cumple'?'✓ Cumple':c.estado==='cumple_parcial'?'◐ Parcial':'✗ Incumple'}</span>
+              </div>
+            </div>
+            <p style="color:#94A3B8;font-size:14px;line-height:1.5">${c.comentario}</p>
+            ${c.alerta?`<div style="margin-top:8px;padding:8px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:6px;color:#F59E0B;font-size:13px">⚠ ${c.alerta}</div>`:''}
+          </div>`).join('')}
+      </div>
+
+      <div id="rtab-content-disciplinario" class="hidden">
+        ${d.proceso_disciplinario?[['tipificacion','Tipificación de Faltas','Art. 113 CST'],['debido_proceso','Garantía del Debido Proceso','Art. 115 CST'],['proporcionalidad','Proporcionalidad de Sanciones','SL2771-2018 CSJ'],['plazos','Plazos y Términos','Art. 115 CST'],['derecho_defensa','Derecho de Defensa y Contradicción','SU-998/00 C.Const.']].map(([k,l,n])=>{
+          const dd=d.proceso_disciplinario[k];if(!dd)return'';
+          return `<div class="card" style="padding:18px 20px;margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+              <div><div style="color:#E2E8F4;font-size:15px;margin-bottom:3px">${l}</div><div style="color:#64748B;font-size:12px;font-family:'Cinzel',serif">${n}</div></div>
+              <span style="font-family:'Cinzel',serif;font-size:18px;color:${scoreColor(dd.puntaje)};font-weight:700;flex-shrink:0">${dd.puntaje}/10</span>
+            </div>
+            <p style="color:#94A3B8;font-size:14px;line-height:1.5">${dd.analisis}</p>
+            ${dd.alerta?`<div style="margin-top:8px;padding:8px 12px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:6px;color:#F59E0B;font-size:13px">⚠ ${dd.alerta}</div>`:''}
+          </div>`;}).join(''):''}
+      </div>
+
+      <div id="rtab-content-conclusiones" class="hidden">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:14px">
+          <div class="card" style="padding:20px;border-color:rgba(16,185,129,0.25)">
+            <div style="color:#10B981;font-family:'Cinzel',serif;font-size:13px;margin-bottom:12px">✓ FORTALEZAS</div>
+            ${(d.fortalezas||[]).map(f=>`<div style="color:#94A3B8;font-size:14px;margin-bottom:7px;padding-left:10px;border-left:2px solid #10B981">${f}</div>`).join('')}
+          </div>
+          <div class="card" style="padding:20px;border-color:rgba(239,68,68,0.25)">
+            <div style="color:#EF4444;font-family:'Cinzel',serif;font-size:13px;margin-bottom:12px">✗ DEBILIDADES</div>
+            ${(d.debilidades||[]).map(f=>`<div style="color:#94A3B8;font-size:14px;margin-bottom:7px;padding-left:10px;border-left:2px solid #EF4444">${f}</div>`).join('')}
+          </div>
+        </div>
+        <div class="card" style="padding:20px">
+          <div style="color:#C8A951;font-family:'Cinzel',serif;font-size:13px;margin-bottom:12px">RECOMENDACIONES</div>
+          ${(d.recomendaciones||[]).map((r,i)=>`<div style="display:flex;gap:10px;margin-bottom:10px;padding:10px 14px;background:rgba(200,169,81,0.05);border-radius:7px"><span style="color:#C8A951;font-family:'Cinzel',serif;font-size:13px;flex-shrink:0">${i+1}.</span><span style="color:#94A3B8;font-size:14px;line-height:1.5">${r}</span></div>`).join('')}
+        </div>
+      </div>
+
+      <button class="btn-ghost" onclick="resetEval()" style="padding:10px 24px;border-radius:8px;margin-top:16px">← Nueva Evaluación</button>
+    </div>`;
+}
+
+function rTab(t){
+  ['criterios','disciplinario','conclusiones'].forEach(k=>{
+    document.getElementById(`rtab-content-${k}`).classList.toggle('hidden',k!==t);
+    document.getElementById(`rtab-${k}`).classList.toggle('tab-active',k===t);
+  });
+}
+
+function resetEval(){
+  document.getElementById('eval-resultado').classList.add('hidden');
+  document.getElementById('eval-input-area').classList.remove('hidden');
+  renderEvalInput();
+}
+
+// ─── ELABORADOR ───────────────────────────────────────────────────────────────
+function renderElabInput(){
+  document.getElementById('elab-resultado').classList.add('hidden');
+  document.getElementById('elab-input-area').innerHTML=`
+    <div class="fade-up">
+      <div style="background:rgba(200,169,81,0.06);border:1px solid rgba(200,169,81,0.2);border-radius:10px;padding:14px 18px;margin-bottom:18px;display:flex;gap:10px">
+        <span style="font-size:18px">✍️</span>
+        <div><div style="color:#C8A951;font-family:'Cinzel',serif;font-size:13px;margin-bottom:3px">Elaboración de RIT con IA</div>
+        <div style="color:#64748B;font-size:13px;line-height:1.5">Genera un Reglamento Interno de Trabajo completo, técnico y ajustado al CST y normativa colombiana vigente.</div></div>
+      </div>
+      <div class="card" style="padding:22px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px">
+          <div><div style="color:#64748B;font-size:11px;font-family:'Cinzel',serif;letter-spacing:0.07em;margin-bottom:5px">NOMBRE DE LA EMPRESA *</div>
+          <input type="text" id="elab-empresa" placeholder="Ej: Comercializadora ABC S.A.S." style="padding:10px 13px"/></div>
+          <div><div style="color:#64748B;font-size:11px;font-family:'Cinzel',serif;letter-spacing:0.07em;margin-bottom:5px">ACTIVIDAD ECONÓMICA</div>
+          <input type="text" id="elab-actividad" placeholder="Ej: Comercio al por menor" style="padding:10px 13px"/></div>
+          <div><div style="color:#64748B;font-size:11px;font-family:'Cinzel',serif;letter-spacing:0.07em;margin-bottom:5px">CIUDAD / MUNICIPIO</div>
+          <input type="text" id="elab-ciudad" placeholder="Ej: Montería, Córdoba" style="padding:10px 13px"/></div>
+        </div>
+        <div id="elab-error" style="color:#EF4444;font-size:13px;margin-bottom:12px;display:none"></div>
+        <button class="btn-gold" onclick="elaborar()" style="padding:12px 32px;border-radius:8px;font-size:15px">✍️ Generar Reglamento Completo</button>
+      </div>
+    </div>`;
+}
+
+async function elaborar(){
+  const empresa=document.getElementById('elab-empresa').value.trim();
+  if(!empresa){document.getElementById('elab-error').textContent='Ingresa el nombre de la empresa.';document.getElementById('elab-error').style.display='block';return;}
+  document.getElementById('elab-error').style.display='none';
+  document.getElementById('elab-input-area').classList.add('hidden');
+  document.getElementById('elab-loading').classList.remove('hidden');
+  const ciudad=document.getElementById('elab-ciudad').value.trim();
+  const actividad=document.getElementById('elab-actividad').value.trim();
+  try{
+    const data=await callAI(PROMPT_ELABORAR,`Empresa: ${empresa}\nActividad: ${actividad||'General'}\nCiudad: ${ciudad||'Colombia'}\nElabora el reglamento completo.`);
+    renderRIT(data);
+  }catch(e){
+    document.getElementById('elab-loading').classList.add('hidden');
+    document.getElementById('elab-input-area').classList.remove('hidden');
+    document.getElementById('elab-error').textContent='Error al elaborar. Intenta de nuevo.';
+    document.getElementById('elab-error').style.display='block';
+  }
+  document.getElementById('elab-loading').classList.add('hidden');
+}
+
+function renderRIT(d){
+  STATE.elab_open=0;
+  const el=document.getElementById('elab-resultado');
+  el.innerHTML=`
+    <div class="fade-up">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div><div style="font-family:'Cinzel',serif;font-size:16px;color:#C8A951;margin-bottom:3px">${d.titulo}</div>
+        <div style="color:#64748B;font-size:13px">${(d.capitulos||[]).length} capítulos generados</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="badge badge-gold">✓ RIT Completo</span>
+          <button class="btn-ghost" onclick="resetElab()" style="padding:7px 16px;border-radius:7px;font-size:13px">← Nuevo RIT</button>
+        </div>
+      </div>
+      ${(d.capitulos||[]).map((cap,ci)=>`
+        <div class="card" style="margin-bottom:10px;overflow:hidden">
+          <div onclick="toggleCap(${ci})" style="padding:16px 20px;cursor:pointer;display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <span style="color:#C8A951;font-family:'Cinzel',serif;font-size:12px;margin-right:10px">CAPÍTULO ${cap.numero}</span>
+              <span style="color:#E2E8F4;font-size:15px">${cap.titulo}</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span style="color:#64748B;font-size:12px">${(cap.articulos||[]).length} arts.</span>
+              <span id="cap-arrow-${ci}" style="color:#64748B;font-size:16px">${ci===0?'▲':'▼'}</span>
+            </div>
+          </div>
+          <div id="cap-body-${ci}" style="${ci===0?'':'display:none'};border-top:1px solid #1A2540;padding:16px 20px">
+            ${(cap.articulos||[]).map((art,ai)=>`
+              <div style="margin-bottom:16px;padding-bottom:16px;${ai<(cap.articulos.length-1)?'border-bottom:1px solid #0F1929':''}">
+                <div style="font-family:'Cinzel',serif;font-size:12px;color:#C8A951;margin-bottom:6px">Art. ${art.numero} — ${art.titulo}</div>
+                <p style="color:#94A3B8;font-size:14px;line-height:1.65">${art.contenido}</p>
+              </div>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>`;
+  el.classList.remove('hidden');
+}
+
+function toggleCap(i){
+  const body=document.getElementById(`cap-body-${i}`);
+  const arrow=document.getElementById(`cap-arrow-${i}`);
+  const open=body.style.display!=='none';
+  body.style.display=open?'none':'block';
+  arrow.textContent=open?'▼':'▲';
+}
+
+function resetElab(){
+  document.getElementById('elab-resultado').classList.add('hidden');
+  document.getElementById('elab-input-area').classList.remove('hidden');
+  renderElabInput();
+}
+
+// ─── PANEL MAESTRO ────────────────────────────────────────────────────────────
+function masterTab(t){
+  ['stats','normas','usuarios'].forEach(k=>{
+    document.getElementById(`mtab-${k}`).classList.toggle('tab-active',k===t);
+  });
+  STATE.masterTab=t;
+  renderMasterContent();
+}
+
+function renderMasterContent(){
+  const t=STATE.masterTab;
+  const el=document.getElementById('master-content');
+  if(t==='stats'){
+    const total=USERS.reduce((s,u)=>s+u.ingresos,0);
+    const prem=USERS.filter(u=>u.plan==='premium').length;
+    const evals=USERS.reduce((s,u)=>s+u.evals,0);
+    el.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-bottom:20px">
+        ${[['💰','Ingresos Totales',`$${total.toFixed(2)} USD`,'#C8A951'],['⭐','Usuarios Premium',prem,'#14B8A6'],['👥','Total Usuarios',USERS.length,'#8B5CF6'],['📋','Evaluaciones',evals,'#F59E0B']].map(([ic,lbl,val,color])=>`
+          <div class="stat-card"><div style="font-size:24px;margin-bottom:6px">${ic}</div><div style="color:#64748B;font-size:12px;font-family:'Cinzel',serif;margin-bottom:4px">${lbl}</div><div style="color:${color};font-family:'Cinzel',serif;font-size:22px;font-weight:700">${val}</div></div>`).join('')}
+      </div>
+      <div class="card" style="padding:20px">
+        <div style="font-family:'Cinzel',serif;font-size:13px;color:#C8A951;margin-bottom:14px">INGRESOS POR USUARIO</div>
+        ${USERS.filter(u=>u.plan==='premium').map(u=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #0F1929;flex-wrap:wrap;gap:6px">
+            <div><div style="color:#E2E8F4;font-size:14px">${u.nombre}</div><div style="color:#64748B;font-size:12px">${u.email} · ${u.tipo} · ${u.evals} eval.</div></div>
+            <div style="color:#C8A951;font-family:'Cinzel',serif;font-size:16px;font-weight:600">$${u.ingresos.toFixed(2)} USD</div>
+          </div>`).join('')}
+      </div>`;
+  } else if(t==='normas'){
+    const cats=['CST','Decreto','Ley','Jurisprudencia'];
+    const catColors={CST:'#3B82F6',Decreto:'#8B5CF6',Ley:'#10B981',Jurisprudencia:'#F59E0B'};
+    el.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div style="color:#64748B;font-size:14px">${STATE.normas.filter(n=>n.on).length} de ${STATE.normas.length} normas activas</div>
+        <button class="btn-teal" onclick="showAddNorma()" style="padding:9px 18px;border-radius:7px;font-size:13px">+ Agregar Norma</button>
+      </div>
+      <div id="add-norma-form" class="hidden card" style="padding:20px;margin-bottom:16px;border-color:rgba(200,169,81,0.3)">
+        <div style="font-family:'Cinzel',serif;font-size:13px;color:#C8A951;margin-bottom:14px">NUEVA NORMA / SENTENCIA / DECRETO</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:12px">
+          <div><div style="color:#64748B;font-size:11px;font-family:'Cinzel',serif;margin-bottom:4px">CÓDIGO</div><input type="text" id="new-norma-codigo" placeholder="Ej: Ley 2039/2020" style="padding:9px 12px"/></div>
+          <div><div style="color:#64748B;font-size:11px;font-family:'Cinzel',serif;margin-bottom:4px">CATEGORÍA</div>
+          <select id="new-norma-cat" style="padding:9px 12px"><option>CST</option><option>Decreto</option><option>Ley</option><option>Jurisprudencia</option></select></div>
+        </div>
+        <div style="margin-bottom:12px"><div style="color:#64748B;font-size:11px;font-family:'Cinzel',serif;margin-bottom:4px">DESCRIPCIÓN</div><input type="text" id="new-norma-desc" placeholder="Descripción de la norma o sentencia" style="padding:9px 12px"/></div>
+        <div style="display:flex;gap:10px">
+          <button class="btn-gold" onclick="addNorma()" style="padding:9px 24px;border-radius:7px;font-size:14px">Agregar</button>
+          <button class="btn-ghost" onclick="document.getElementById('add-norma-form').classList.add('hidden')" style="padding:9px 18px;border-radius:7px">Cancelar</button>
+        </div>
+      </div>
+      ${cats.map(cat=>`
+        <div style="margin-bottom:18px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:${catColors[cat]}"></div>
+            <span style="font-family:'Cinzel',serif;font-size:12px;color:${catColors[cat]};letter-spacing:0.08em">${cat}</span>
+          </div>
+          ${STATE.normas.filter(n=>n.cat===cat).map((n,i)=>`
+            <div class="norma-row">
+              <button class="toggle ${n.on?'toggle-on':'toggle-off'}" onclick="toggleNorma('${n.id}')"></button>
+              <div style="flex:1">
+                <div style="color:${n.on?'#E2E8F4':'#374151'};font-size:13px;font-family:'Cinzel',serif;margin-bottom:2px">${n.codigo}</div>
+                <div style="color:${n.on?'#64748B':'#2D3748'};font-size:13px">${n.desc}</div>
+              </div>
+              ${!['cst_104','cst_108','cst_115'].includes(n.id)?`<button onclick="deleteNorma('${n.id}')" style="background:transparent;border:1px solid #3B1A1A;color:#EF4444;font-size:12px;cursor:pointer;border-radius:6px;padding:5px 12px">✕</button>`:''}
+            </div>`).join('')}
+        </div>`).join('')}`;
+  } else {
+    el.innerHTML=`
+      <div style="margin-bottom:14px;color:#64748B;font-size:14px">${USERS.length} usuarios registrados</div>
+      ${USERS.map(u=>`
+        <div class="card" style="padding:16px 20px;margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="color:#E2E8F4;font-size:15px;margin-bottom:3px">${u.nombre}</div>
+              <div style="color:#64748B;font-size:13px;margin-bottom:6px">${u.email}</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <span class="badge ${u.plan==='premium'?'badge-gold':'badge-free'}">${u.plan==='premium'?'⭐ Premium':'Free'}</span>
+                ${u.tipo!=='—'?`<span class="badge" style="background:rgba(13,148,136,0.12);color:#14B8A6;border:1px solid rgba(13,148,136,0.28)">${u.tipo}</span>`:''}
+                <span class="badge" style="background:rgba(100,116,139,0.1);color:#64748B">${u.evals} evaluaciones</span>
+              </div>
+            </div>
+            <div style="text-align:right">
+              <div style="color:#C8A951;font-family:'Cinzel',serif;font-size:18px;font-weight:700">$${u.ingresos.toFixed(2)}</div>
+              <div style="color:#64748B;font-size:12px">Desde ${u.fecha}</div>
+            </div>
+          </div>
+        </div>`).join('')}`;
+  }
+}
+
+function showAddNorma(){document.getElementById('add-norma-form').classList.remove('hidden');}
+function toggleNorma(id){
+  STATE.normas=STATE.normas.map(n=>n.id===id?{...n,on:!n.on}:n);
+  localStorage.setItem('rit_normas',JSON.stringify(STATE.normas));
+  renderMasterContent();
+}
+function deleteNorma(id){
+  STATE.normas=STATE.normas.filter(n=>n.id!==id);
+  localStorage.setItem('rit_normas',JSON.stringify(STATE.normas));
+  renderMasterContent();
+}
+function addNorma(){
+  const codigo=document.getElementById('new-norma-codigo').value.trim();
+  const desc=document.getElementById('new-norma-desc').value.trim();
+  const cat=document.getElementById('new-norma-cat').value;
+  if(!codigo||!desc)return;
+  STATE.normas.push({id:'custom_'+Date.now(),codigo,desc,cat,on:true});
+  localStorage.setItem('rit_normas',JSON.stringify(STATE.normas));
+  renderMasterContent();
+}
+
+// ─── MODALES ──────────────────────────────────────────────────────────────────
+function showPinModal(){document.getElementById('modal-pin').classList.remove('hidden');document.getElementById('pin-input').value='';document.getElementById('pin-error').style.display='none';}
+function closePinModal(){document.getElementById('modal-pin').classList.add('hidden');}
+function checkPin(){
+  const pin=document.getElementById('pin-input').value;
+  if(pin===MASTER_PIN){closePinModal();show('screen-master');masterTab('stats');}
+  else{document.getElementById('pin-error').style.display='block';document.getElementById('pin-input').value='';}
+}
+
+function showPayU(){
+  document.getElementById('modal-payu').classList.remove('hidden');
+  renderPayUSelect();
+}
+function closePayU(){document.getElementById('modal-payu').classList.add('hidden');}
+
+function renderPayUSelect(){
+  STATE.payuTipo='mensual';
+  document.getElementById('payu-content').innerHTML=`
+    <div>
+      ${[['mensual','$19.99 USD / mes','Evaluaciones y elaboraciones ilimitadas'],['por_uso','$9.99 USD / evaluación','Acceso completo para una evaluación']].map(([v,p,d])=>`
+        <div onclick="selectPayUTipo('${v}')" id="payu-opt-${v}" style="padding:16px;border-radius:10px;border:2px solid ${v==='mensual'?'#C8A951':'#1A2540'};background:${v==='mensual'?'rgba(200,169,81,0.06)':'#080D1A'};margin-bottom:12px;cursor:pointer;transition:all 0.2s">
+          <div style="font-family:'Cinzel',serif;font-size:16px;color:${v==='mensual'?'#C8A951':'#E2E8F4'};margin-bottom:3px">${p}</div>
+          <div style="color:#64748B;font-size:13px">${d}</div>
+        </div>`).join('')}
+      <button class="btn-gold" onclick="renderPayUForm()" style="width:100%;padding:14px;border-radius:8px;font-size:15px;margin-top:8px">Continuar →</button>
+    </div>`;
+}
+
+function selectPayUTipo(v){
+  STATE.payuTipo=v;
+  ['mensual','por_uso'].forEach(k=>{
+    const el=document.getElementById(`payu-opt-${k}`);
+    el.style.border=`2px solid ${k===v?'#C8A951':'#1A2540'}`;
+    el.style.background=k===v?'rgba(200,169,81,0.06)':'#080D1A';
+    el.querySelector('div').style.color=k===v?'#C8A951':'#E2E8F4';
+  });
+}
+
+function renderPayUForm(){
+  const precio=STATE.payuTipo==='mensual'?'19.99':'9.99';
+  document.getElementById('payu-content').innerHTML=`
+    <div>
+      <div style="background:rgba(200,169,81,0.07);border:1px solid rgba(200,169,81,0.22);border-radius:8px;padding:12px 16px;margin-bottom:18px">
+        <div style="color:#C8A951;font-family:'Cinzel',serif;font-size:13px;margin-bottom:2px">${STATE.payuTipo==='mensual'?'Suscripción mensual ilimitada':'Evaluación única completa'}</div>
+        <div style="color:#E8C96A;font-family:'Cinzel',serif;font-size:22px;font-weight:700">$${precio} USD</div>
+      </div>
+      ${[['Nombre completo','text','payu-nombre'],['Correo electrónico','email','payu-email'],['Cédula / NIT','text','payu-cedula'],['Número de tarjeta','text','payu-tarjeta'],['MM/AA','text','payu-vence'],['CVV','password','payu-cvv']].map(([lbl,t,id])=>`
+        <div style="margin-bottom:10px">
+          <div style="color:#64748B;font-size:11px;font-family:'Cinzel',serif;letter-spacing:0.07em;margin-bottom:4px">${lbl}</div>
+          <input type="${t}" id="${id}" style="padding:10px 13px"/>
+        </div>`).join('')}
+      <button class="btn-gold" onclick="procesarPago()" style="width:100%;padding:13px;border-radius:8px;font-size:15px;margin-top:10px">Pagar con PayU Colombia</button>
+      <button class="btn-ghost" onclick="renderPayUSelect()" style="width:100%;padding:10px;border-radius:8px;margin-top:8px">← Volver</button>
+    </div>`;
+}
+
+async function procesarPago(){
+  document.getElementById('payu-content').innerHTML=`<div style="text-align:center;padding:40px 20px"><div class="spinner"></div><p style="color:#C8A951;font-family:'Cinzel',serif;font-size:13px;letter-spacing:0.12em;animation:pulse 1.5s ease infinite">Procesando pago con PayU...</p></div>`;
+  await new Promise(r=>setTimeout(r,2500));
+  document.getElementById('payu-content').innerHTML=`<div style="text-align:center;padding:30px 0"><div style="font-size:52px;margin-bottom:16px">✅</div><div style="font-family:'Cinzel',serif;color:#10B981;font-size:18px;margin-bottom:8px">¡Pago exitoso!</div><div style="color:#64748B;font-size:14px">Premium activado. Redirigiendo...</div></div>`;
+  STATE.plan='premium';
+  sessionStorage.setItem('rit_plan','premium');
+  updateNav();
+  setTimeout(()=>{closePayU();renderEvalInput();},2000);
+}
+
+// ─── INICIALIZACIÓN ───────────────────────────────────────────────────────────
+goLanding();
+updateNav();
+</script>
+</body>
+</html>
